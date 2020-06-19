@@ -1,0 +1,21 @@
+[package]
+name = "endorser-tool"
+version = "0.1.0"
+authors = ["Andrew Whitehead <cywolf@gmail.com>"]
+edition = "2018"
+publish = false
+
+[dependencies]
+bs58 = "0.3"
+indy-vdr = { git = "https://github.com/andrewwhitehead/indy-vdr", branch = "ursa-update" }
+indy-utils = { version = "0.1", git = "https://github.com/bcgov/indy-shared-rs", default-features = false, features = ["ed25519"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0"
+serde_json = "1.0"
+web-view = { version = "0.5.4" }
+
+#[package.metadata.deb]
+#assets = [
+#    ["target/release/endorser-tool", "usr/bin/endorser-tool", "755"],
+#    ["endorser-tool.desktop", "usr/share/applications/", "644"],
+#]
