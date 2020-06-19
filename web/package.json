@@ -1,4 +1,7 @@
 {
+  "engine": {
+    "browsers": ">1% and IE 10"
+  },
   "scripts": {
     "start": "parcel src/index.html --global app",
     "build": "parcel build src/index.html --no-cache --no-content-hash --out-dir build --global app"
