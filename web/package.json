@@ -4,7 +4,7 @@
   },
   "scripts": {
     "start": "parcel src/index.html --global app",
-    "build": "parcel build src/index.html --no-cache --no-content-hash --out-dir build --global app"
+    "build": "parcel build src/index.html --no-cache --out-dir build --global app"
   },
   "private": true,
   "dependencies": {
@@ -15,7 +15,16 @@
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-inline-source": "^1.0.0",
     "sass": "^1.26.8",
-    "vue-hot-reload-api": "^2.3.4",
     "vue-template-compiler": "^2.6.11"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {
+        "overrideBrowserslist": [
+          ">1%",
+          "IE 10-11"
+        ]
+      }
+    }
   }
 }
