@@ -491,7 +491,7 @@ dependencies = [
 [[package]]
 name = "indy-vdr"
 version = "0.1.0"
-source = "git+https://github.com/andrewwhitehead/indy-vdr?branch=ursa-update#0aad43114eb6122659515933ddd2899673427e29"
+source = "git+https://github.com/andrewwhitehead/indy-vdr?rev=f187f41c87bbbc49a7f66256612be08d63a0e0d7#f187f41c87bbbc49a7f66256612be08d63a0e0d7"
 dependencies = [
  "base64",
  "env_logger",
@@ -1141,7 +1141,7 @@ checksum = "6454029bf181f092ad1b853286f23e2c507d8e8194d01d92da4a55c274a5508c"
 [[package]]
 name = "vdr-shared"
 version = "0.1.0"
-source = "git+https://github.com/andrewwhitehead/indy-vdr?branch=ursa-update#0aad43114eb6122659515933ddd2899673427e29"
+source = "git+https://github.com/andrewwhitehead/indy-vdr?rev=f187f41c87bbbc49a7f66256612be08d63a0e0d7#f187f41c87bbbc49a7f66256612be08d63a0e0d7"
 dependencies = [
  "base64",
  "bs58",
