@@ -1,6 +1,6 @@
 import Vue from "vue";
 import App from "./App.vue";
-import { init } from "./rpc";
+import { init, log } from "./rpc";
 
 let vm = new Vue({
   el: "#app",
@@ -16,6 +16,7 @@ let vm = new Vue({
     });
   },
   created: function() {
+    log(navigator.userAgent);
     init();
   },
 });

@@ -1,6 +1,6 @@
 {
   "engine": {
-    "browsers": ">1% and IE 10"
+    "browsers": ">1%, IE 10-11"
   },
   "scripts": {
     "start": "parcel src/index.html --global app",
