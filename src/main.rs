@@ -11,6 +11,9 @@ use indy_utils::ursa::signatures::{ed25519::Ed25519Sha512, SignatureScheme};
 
 use web_view::{Content, WVResult, WebView};
 
+const PRELOAD: &'static str = "<link href=js/app.js rel=preload as=script>";
+const MARKER: &'static str = "src=js/app.js>";
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EndorserInfo {
     did: String,
@@ -24,7 +27,15 @@ struct UserData {
 }
 
 fn main() {
-    let html = include_str!("../web/build/index.html");
+    // FIXME should be done in a build script
+    let src_html = include_str!("../web/build/index.html");
+    let js = include_str!("../web/build/js/app.js");
+
+    let pos = src_html.find(MARKER).unwrap();
+    let mut html = src_html[..pos].to_string().replace(PRELOAD, "");
+    html.push('>');
+    html.push_str(js);
+    html.push_str(&src_html[(pos + MARKER.len())..]);
 
     let webview = web_view::builder()
         .title("Endorser Tool")

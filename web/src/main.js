@@ -1,6 +1,7 @@
 import Vue from "vue";
 import App from "./App.vue";
 import { init, log } from "./rpc";
+import "./app.scss";
 
 let vm = new Vue({
   el: "#app",
@@ -29,4 +30,4 @@ function fromRust(cmd) {
   }
 }
 
-export { fromRust };
+window.app = { fromRust };
