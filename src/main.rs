@@ -27,7 +27,7 @@ struct UserData {
 }
 
 fn main() {
-    // FIXME should be done in a build script
+    // FIXME should be done in a build script.
     let src_html = include_str!("../web/build/index.html");
     let js = include_str!("../web/build/js/app.js");
 
