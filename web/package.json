@@ -1,18 +1,20 @@
 {
+  "private": true,
   "scripts": {
     "build": "vue-cli-service build"
   },
-  "private": true,
   "dependencies": {
-    "vue": "^2.6.11"
+    "core-js": "~3.6.5",
+    "vue": "~2.6.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.3",
-    "@babel/preset-env": "^7.10.3",
-    "@vue/cli": "^4.4.4",
-    "@vue/cli-service": "^4.4.4",
-    "node-sass": "^4.14.1",
-    "sass-loader": "^8.0.2"
+    "@babel/core": "~7.10.3",
+    "@babel/preset-env": "~7.10.3",
+    "@vue/cli": "~4.4.0",
+    "@vue/cli-plugin-babel": "~4.4.0",
+    "@vue/cli-service": "~4.4.0",
+    "node-sass": "~4.14.1",
+    "sass-loader": "~8.0.2"
   },
   "postcss": {
     "plugins": {
