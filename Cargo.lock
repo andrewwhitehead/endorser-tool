@@ -224,7 +224,6 @@ checksum = "562cc8504a01eb20c10fb154abd7c4baeb9beba2329cf85838ee2bd48a468b18"
 name = "endorser-tool"
 version = "0.1.0"
 dependencies = [
- "bs58",
  "indy-utils",
  "indy-vdr",
  "serde",

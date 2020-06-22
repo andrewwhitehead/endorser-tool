@@ -2,9 +2,10 @@
 extern crate serde_derive;
 
 use indy_vdr::common::did::DidValue;
-use indy_vdr::common::error::VdrResult;
+use indy_vdr::common::error::{input_err, VdrResult};
 use indy_vdr::pool::PreparedRequest;
 
+use indy_utils::base58;
 use indy_utils::keys::SignKey;
 use indy_utils::ursa::keys::PrivateKey;
 use indy_utils::ursa::signatures::{ed25519::Ed25519Sha512, SignatureScheme};
@@ -18,6 +19,7 @@ const MARKER: &'static str = "src=js/app.js>";
 pub struct EndorserInfo {
     did: String,
     verkey: String,
+    verkey_long: String,
 }
 
 #[derive(Default)]
@@ -27,7 +29,7 @@ struct UserData {
 }
 
 fn main() {
-    // FIXME should be done in a build script.
+    // FIXME should be done in a build script
     let src_html = include_str!("../web/build/index.html");
     let js = include_str!("../web/build/js/app.js");
 
@@ -56,24 +58,46 @@ fn main() {
                     println!("{}", text);
                     NoUpdate
                 }
-                UpdateSeed { seed } => {
-                    let key = SignKey::from_seed(seed.as_bytes()).unwrap();
-                    let verkey = key.public_key().unwrap();
-                    let verkey_bytes = verkey.key_bytes().unwrap();
-                    let did = bs58::encode(&verkey_bytes[..16]).into_string();
-                    let verkey = verkey.as_base58().unwrap().to_string();
-                    let endorser = EndorserInfo { did, verkey };
-                    data.endorser = endorser.clone();
-                    data.key.replace(key);
-                    SetEndorser {
-                        endorser,
-                        error: None,
+                UpdateSeed { seed } => match create_did(seed.as_bytes()) {
+                    Ok((key, endorser)) => {
+                        data.key.replace(key);
+                        data.endorser = endorser.clone();
+                        SetEndorser {
+                            endorser,
+                            error: None,
+                        }
                     }
-                }
-                UpdateDid { did } => {
-                    data.endorser.did = did;
-                    NoUpdate
-                }
+                    Err(err) => {
+                        data.key.take();
+                        data.endorser = EndorserInfo::default();
+                        SetEndorser {
+                            endorser: data.endorser.clone(),
+                            error: Some(err.to_string()),
+                        }
+                    }
+                },
+                UpdateDid { did } => match base58::decode(&did) {
+                    Ok(did_bytes) => {
+                        if did_bytes.len() == 16 {
+                            data.endorser.did = did;
+                            let verkey_bytes = base58::decode(&data.endorser.verkey_long).unwrap();
+                            data.endorser.verkey = verkey_short(&did_bytes, &verkey_bytes);
+                            SetEndorser {
+                                endorser: data.endorser.clone(),
+                                error: None,
+                            }
+                        } else {
+                            SetEndorser {
+                                endorser: data.endorser.clone(),
+                                error: Some("DID value must be 16 bytes in length".to_string()),
+                            }
+                        }
+                    }
+                    Err(_) => SetEndorser {
+                        endorser: data.endorser.clone(),
+                        error: Some("Invalid base58 format for DID value".to_string()),
+                    },
+                },
                 SignTransaction { txn } => match sign_transaction(&data, txn) {
                     Ok(txn) => SetSignedOutput { txn, error: None },
                     Err(err) => SetSignedOutput {
@@ -99,6 +123,34 @@ fn send_update(webview: &mut WebView<UserData>, update: &Update) -> WVResult {
     webview.eval(&upd)
 }
 
+fn create_did<S: AsRef<[u8]>>(seed: S) -> VdrResult<(SignKey, EndorserInfo)> {
+    let key = SignKey::from_seed(seed.as_ref()).map_err(|e| input_err(e.to_string()))?;
+    let verkey = key.public_key().unwrap();
+    let verkey_bytes = verkey.key_bytes().unwrap();
+    let did_bytes = &verkey_bytes[..16];
+    let did = base58::encode(did_bytes);
+    let verkey_long = base58::encode(&verkey_bytes);
+    let verkey = verkey_short(did_bytes, &verkey_bytes);
+    Ok((
+        key,
+        EndorserInfo {
+            did,
+            verkey,
+            verkey_long,
+        },
+    ))
+}
+
+fn verkey_short(did_bytes: &[u8], verkey_bytes: &[u8]) -> String {
+    if did_bytes == &verkey_bytes[..16] {
+        let mut verkey = "~".to_string();
+        verkey.push_str(&base58::encode(&verkey_bytes[16..]));
+        verkey
+    } else {
+        base58::encode(verkey_bytes)
+    }
+}
+
 fn sign_transaction(data: &UserData, txn: String) -> VdrResult<String> {
     let mut req = PreparedRequest::from_request_json(txn)?;
     let sigin = req.get_signature_input()?;
@@ -115,7 +167,7 @@ struct Task {
     done: bool,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(tag = "cmd", rename_all = "camelCase")]
 pub enum Cmd {
     Init,
@@ -125,7 +177,7 @@ pub enum Cmd {
     SignTransaction { txn: String },
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(tag = "update", rename_all = "camelCase")]
 pub enum Update {
     NoUpdate,

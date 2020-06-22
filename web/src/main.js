@@ -24,7 +24,11 @@ let vm = new Vue({
 
 function fromRust(cmd) {
   if (cmd.update === "setEndorser") {
-    vm.endorser = cmd.endorser;
+    if (cmd.error) {
+      vm.endorser = { error: cmd.error };
+    } else {
+      vm.endorser = cmd.endorser;
+    }
   } else if (cmd.update === "setSignedOutput") {
     vm.signedTxn = { txn: cmd.txn, error: cmd.error };
   }

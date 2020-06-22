@@ -15,7 +15,7 @@
         @input="setEndorser"
       />
       <div class="field-hint">{{ seedLen }}/32 chars</div>
-      <div v-if="endorser.verkey">
+      <div v-if="endorserInfo.verkey">
         <label class="field-label" for="endorser-did">Endorser DID</label>
         <input
           class="field did"
@@ -28,7 +28,7 @@
           v-model="endorserInfo.did"
           @change="setDid"
         />
-        <div class="field-hint"></div>
+        <div class="field-hint error">{{ endorserError }}</div>
         <label class="field-label" for="endorser-verkey"
           >Verification key</label
         >
@@ -89,6 +89,7 @@ export default {
     return {
       config: true,
       endorserInfo: { did: "", verkey: "" },
+      endorserError: "",
       seedLen: 0,
       txnInput: "",
       txnOutput: "",
@@ -105,7 +106,12 @@ export default {
   },
   watch: {
     endorser: function(val) {
-      this.endorserInfo = val;
+      if (val.error) {
+        this.endorserError = val.error;
+      } else {
+        this.endorserError = "";
+        this.endorserInfo = val;
+      }
     },
     txnInput: function(val) {
       this.txnOutput = "";
