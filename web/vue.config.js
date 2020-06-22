@@ -11,5 +11,5 @@ module.exports = {
   filenameHashing: false,
   outputDir: "build",
   publicPath: ".",
-  transpileDependencies: ["vue"],
+  // transpileDependencies: ["vue"],
 };

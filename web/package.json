@@ -16,12 +16,18 @@
     "node-sass": "~4.14.1",
     "sass-loader": "~8.0.2"
   },
+  "browsers": [
+    ">1%",
+    "Edge 12-18",
+    "Safari 10-12"
+  ],
   "postcss": {
     "plugins": {
       "autoprefixer": {
         "overrideBrowserslist": [
           ">1%",
-          "IE 10-11"
+          "Edge 12-18",
+          "Safari 10-12"
         ]
       }
     }
