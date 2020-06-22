@@ -42,7 +42,7 @@ fn main() {
     let webview = web_view::builder()
         .title("Endorser Tool")
         .content(Content::Html(html))
-        .size(480, 480)
+        .size(480, 520)
         .resizable(false)
         .debug(true)
         .user_data(UserData::default())

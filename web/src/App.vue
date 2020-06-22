@@ -67,6 +67,7 @@
       <textarea
         class="field txn output"
         id="txn-output"
+        ref="txnOutputField"
         name="txn_output"
         autocomplete="off"
         autocorrect="off"
@@ -76,6 +77,9 @@
         readonly="readonly"
         v-model="txnOutput"
       ></textarea>
+      <div v-if="txnOutput" class="txn-controls">
+        <a class="copy-link" href="#" @click.prevent="copyTxn">Copy output</a>
+      </div>
       <div class="field-hint error">{{ txnError }}</div>
     </div>
   </div>
@@ -143,6 +147,11 @@ export default {
     },
     setDid: function() {
       updateDid(this.endorserInfo.did);
+    },
+    copyTxn: function() {
+      const txnOut = this.$refs.txnOutputField;
+      txnOut.select();
+      document.execCommand("copy");
     },
   },
 };
