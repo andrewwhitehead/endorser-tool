@@ -6,9 +6,8 @@ use indy_vdr::common::error::{input_err, VdrResult};
 use indy_vdr::pool::PreparedRequest;
 
 use indy_utils::base58;
-use indy_utils::keys::SignKey;
-use indy_utils::ursa::keys::PrivateKey;
-use indy_utils::ursa::signatures::{ed25519::Ed25519Sha512, SignatureScheme};
+use indy_utils::did::generate_did;
+use indy_utils::keys::{EncodedVerKey, SignKey};
 
 use web_view::{Content, WVResult, WebView};
 
@@ -79,9 +78,9 @@ fn main() {
                 UpdateDid { did } => match base58::decode(&did) {
                     Ok(did_bytes) => {
                         if did_bytes.len() == 16 {
+                            let verkey = EncodedVerKey::new(&data.endorser.verkey_long, None, None);
+                            data.endorser.verkey = verkey.abbreviated_for_did(&did).unwrap();
                             data.endorser.did = did;
-                            let verkey_bytes = base58::decode(&data.endorser.verkey_long).unwrap();
-                            data.endorser.verkey = verkey_short(&did_bytes, &verkey_bytes);
                             SetEndorser {
                                 endorser: data.endorser.clone(),
                                 error: None,
@@ -124,39 +123,24 @@ fn send_update(webview: &mut WebView<UserData>, update: &Update) -> WVResult {
 }
 
 fn create_did<S: AsRef<[u8]>>(seed: S) -> VdrResult<(SignKey, EndorserInfo)> {
-    let key = SignKey::from_seed(seed.as_ref()).map_err(|e| input_err(e.to_string()))?;
-    let verkey = key.public_key().unwrap();
-    let verkey_bytes = verkey.key_bytes().unwrap();
-    let did_bytes = &verkey_bytes[..16];
-    let did = base58::encode(did_bytes);
-    let verkey_long = base58::encode(&verkey_bytes);
-    let verkey = verkey_short(did_bytes, &verkey_bytes);
+    let (did, sk, vk) = generate_did(Some(seed.as_ref()))
+        .map_err(|err| input_err(format!("Error generating DID: {}", err)))?;
+    let verkey_long = vk.as_base58().unwrap();
+    let verkey = verkey_long.abbreviated_for_did(&did).unwrap();
     Ok((
-        key,
+        sk,
         EndorserInfo {
-            did,
+            did: did.to_string(),
             verkey,
-            verkey_long,
+            verkey_long: verkey_long.to_string(),
         },
     ))
-}
-
-fn verkey_short(did_bytes: &[u8], verkey_bytes: &[u8]) -> String {
-    if did_bytes == &verkey_bytes[..16] {
-        let mut verkey = "~".to_string();
-        verkey.push_str(&base58::encode(&verkey_bytes[16..]));
-        verkey
-    } else {
-        base58::encode(verkey_bytes)
-    }
 }
 
 fn sign_transaction(data: &UserData, txn: String) -> VdrResult<String> {
     let mut req = PreparedRequest::from_request_json(txn)?;
     let sigin = req.get_signature_input()?;
-    let pk = PrivateKey(data.key.as_ref().unwrap().key_bytes().unwrap());
-    let signer = Ed25519Sha512::new();
-    let sig = signer.sign(sigin.as_bytes(), &pk).unwrap();
+    let sig = data.key.as_ref().unwrap().sign(sigin.as_bytes()).unwrap();
     req.set_multi_signature(&DidValue(data.endorser.did.clone()), &sig)?;
     Ok(serde_json::to_string(&req.req_json).unwrap())
 }
