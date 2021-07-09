@@ -1,13 +1,13 @@
 #[macro_use]
 extern crate serde_derive;
 
-use indy_vdr::common::did::DidValue;
 use indy_vdr::common::error::{input_err, VdrResult};
 use indy_vdr::pool::PreparedRequest;
+use indy_vdr::utils::did::DidValue;
 
 use indy_utils::base58;
 use indy_utils::did::generate_did;
-use indy_utils::keys::{EncodedVerKey, SignKey};
+use indy_utils::keys::{EncodedVerKey, PrivateKey};
 
 use web_view::{Content, WVResult, WebView};
 
@@ -24,7 +24,7 @@ pub struct EndorserInfo {
 #[derive(Default)]
 struct UserData {
     endorser: EndorserInfo,
-    key: Option<SignKey>,
+    key: Option<PrivateKey>,
 }
 
 fn main() {
@@ -122,7 +122,7 @@ fn send_update(webview: &mut WebView<UserData>, update: &Update) -> WVResult {
     webview.eval(&upd)
 }
 
-fn create_did<S: AsRef<[u8]>>(seed: S) -> VdrResult<(SignKey, EndorserInfo)> {
+fn create_did<S: AsRef<[u8]>>(seed: S) -> VdrResult<(PrivateKey, EndorserInfo)> {
     let (did, sk, vk) = generate_did(Some(seed.as_ref()))
         .map_err(|err| input_err(format!("Error generating DID: {}", err)))?;
     let verkey_long = vk.as_base58().unwrap();
